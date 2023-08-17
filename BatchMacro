@@ -1,0 +1,50 @@
+import win32com.client
+import tkinter as tk
+from tkinter import filedialog
+import os
+
+def run_macro_on_drawings(macro_name, drawing_file_paths):
+    # Get the current directory of the Python file
+    python_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # Create an instance of the SolidWorks application
+    swApp = win32com.client.Dispatch("SldWorks.Application")
+
+    # Open each drawing file and run the macro
+    for file_path in drawing_file_paths:
+        # Open the drawing file
+        swModel = swApp.OpenDoc6(file_path, 1, 0, "", 0, 0)
+
+        if swModel is not None:
+            # Get the path to the macro file
+            macro_path = os.path.join(python_dir, macro_name)
+
+            # Run the macro
+            swApp.RunMacro2(macro_path, "", "", 0, 0)
+
+            # Close the drawing file
+            swApp.CloseDoc(file_path)
+
+    # Quit SolidWorks
+    swApp.ExitApp()
+
+def select_drawing_files():
+    # Open the file dialog prompt for selecting drawing files
+    root = tk.Tk()
+    root.withdraw()
+    drawing_file_paths = filedialog.askopenfilenames(
+        title="Select Drawing Files",
+        filetypes=(("SolidWorks Drawings", "*.slddrw"),)
+    )
+
+    # Return the selected drawing file paths
+    return drawing_file_paths
+
+# Get the name of the macro file
+macro_name = "Save As PDF V2.swp"
+
+# Select the drawing files
+drawing_file_paths = select_drawing_files()
+
+# Run the macro on the selected drawing files
+run_macro_on_drawings(macro_name, drawing_file_paths)
